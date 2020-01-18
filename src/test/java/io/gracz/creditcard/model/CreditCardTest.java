@@ -1,38 +1,49 @@
 package io.gracz.creditcard.model;
 
-import io.gracz.creditcard.CreditCard;
-import io.gracz.creditcard.exeptions.CreditBelowMinimumException;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 public class CreditCardTest {
-    public static final int NEW_CREDIT_LIMIT = 2000;
 
+    public static final int INITIAL_LIMIT = 1000;
 
     @Test
-    public void itAllowAssignLimitToCreditCard()
-    {
-        CreditCard card = new CreditCard("1412-1231");
+    public void itAllowAssignLimitToCreditCard() {
+        //Arrange // Given
+        CreditCard creditCard = thereIsCreditCard();
+        //Act     // When
+        creditCard.assignLimit(BigDecimal.valueOf(INITIAL_LIMIT));
+        //Assert  // Then // Expect
+        Assert.assertEquals(BigDecimal.valueOf(INITIAL_LIMIT), creditCard.limit());
+    }
 
-        card.assignLimit(BigDecimal.valueOf(NEW_CREDIT_LIMIT));
-        Assert.assertTrue(card.getLimit().equals(BigDecimal.valueOf(NEW_CREDIT_LIMIT)));
+    private CreditCard thereIsCreditCard() {
+        return new CreditCard("123456789");
     }
 
     @Test
-    public void itVerifyMinimumCredit()
-    {
-        CreditCard card = new CreditCard("1412-1231");
+    public void denyAssignLimitBelowMinimum() {
+        CreditCard creditCard = thereIsCreditCard();
 
-        try
-        {
-            card.assignLimit(BigDecimal.valueOf(50));
+        try {
+            creditCard.assignLimit(BigDecimal.valueOf(500));
             Assert.fail("Exception should be thrown");
-        }
-        catch(CreditBelowMinimumException e)
-        {
+        } catch (CreditBelowLimitException e) {
             Assert.assertTrue(true);
         }
+    }
+
+    @Test
+    public void withdrawFromCard() {
+        //Arrange // Given
+        CreditCard creditCard = thereIsCreditCard();
+        creditCard.assignLimit(BigDecimal.valueOf(INITIAL_LIMIT));
+        //ACt / When
+        creditCard.withdraw(BigDecimal.valueOf(200));
+        //Assert // Then
+        Assert.assertEquals(creditCard.currentBalance(), BigDecimal.valueOf(800));
     }
 }
